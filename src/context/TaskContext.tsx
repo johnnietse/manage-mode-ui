@@ -1,5 +1,8 @@
 
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 export interface Task {
   id: string;
@@ -14,102 +17,308 @@ export interface Task {
 interface TaskContextType {
   tasks: Task[];
   categories: string[];
-  addTask: (task: Omit<Task, 'id'>) => void;
-  updateTask: (task: Task) => void;
-  deleteTask: (id: string) => void;
-  addCategory: (category: string) => void;
-  toggleTaskCompletion: (id: string) => void;
+  loading: boolean;
+  addTask: (task: Omit<Task, 'id'>) => Promise<void>;
+  updateTask: (task: Task) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
+  addCategory: (category: string) => Promise<void>;
+  toggleTaskCompletion: (id: string) => Promise<void>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
 
-// Sample data
-const initialTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Complete project proposal',
-    description: 'Finish the draft and send it for review',
-    dueDate: '2025-05-15',
-    category: 'Work',
-    priority: 'high',
-    completed: false,
-  },
-  {
-    id: '2',
-    title: 'Buy groceries',
-    description: 'Milk, eggs, bread, fruits',
-    dueDate: '2025-05-14',
-    category: 'Personal',
-    priority: 'medium',
-    completed: false,
-  },
-  {
-    id: '3',
-    title: 'Schedule doctor appointment',
-    description: 'Annual checkup',
-    dueDate: '2025-05-20',
-    category: 'Health',
-    priority: 'low',
-    completed: true,
-  },
-  {
-    id: '4',
-    title: 'Prepare for meeting',
-    description: 'Review documents and prepare presentation',
-    dueDate: '2025-05-13',
-    category: 'Work',
-    priority: 'high',
-    completed: false,
-  },
-  {
-    id: '5',
-    title: 'Call mom',
-    description: 'Check how she\'s doing',
-    dueDate: '2025-05-14',
-    category: 'Personal',
-    priority: 'medium',
-    completed: false,
-  },
-];
-
-const initialCategories = ['All', 'Work', 'Personal', 'Health'];
-
 export function TaskProvider({ children }: { children: React.ReactNode }) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [categories, setCategories] = useState<string[]>(initialCategories);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [categories, setCategories] = useState<string[]>(['All']);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  const addTask = (task: Omit<Task, 'id'>) => {
-    const newTask = {
-      ...task,
-      id: Math.random().toString(36).substring(2, 9),
-    };
-    setTasks([...tasks, newTask]);
-  };
+  // Fetch tasks and categories when the user changes
+  useEffect(() => {
+    if (user) {
+      fetchTasks();
+      fetchCategories();
+    } else {
+      setTasks([]);
+      setCategories(['All']);
+    }
+  }, [user]);
 
-  const updateTask = (updatedTask: Task) => {
-    setTasks(tasks.map(task => task.id === updatedTask.id ? updatedTask : task));
-  };
+  // Fetch tasks from Supabase
+  const fetchTasks = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('due_date', { ascending: true });
 
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id));
-  };
+      if (error) throw error;
 
-  const addCategory = (category: string) => {
-    if (!categories.includes(category)) {
-      setCategories([...categories, category]);
+      // Convert to our Task format
+      const formattedTasks: Task[] = data.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description || '',
+        dueDate: task.due_date,
+        category: task.category,
+        priority: task.priority as 'low' | 'medium' | 'high',
+        completed: task.completed,
+      }));
+
+      setTasks(formattedTasks);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching tasks",
+        description: error.message,
+        variant: "destructive",
+      });
+      console.error('Error fetching tasks:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const toggleTaskCompletion = (id: string) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ));
+  // Fetch categories from Supabase
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('name');
+      
+      if (error) throw error;
+      
+      setCategories(['All', ...data.map(cat => cat.name)]);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching categories",
+        description: error.message,
+        variant: "destructive",
+      });
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  // Add a new task
+  const addTask = async (task: Omit<Task, 'id'>) => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to add tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Convert to database format
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert({
+          title: task.title,
+          description: task.description,
+          due_date: task.dueDate,
+          category: task.category,
+          priority: task.priority,
+          completed: task.completed,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Convert back to our Task format and add to state
+      const newTask: Task = {
+        id: data.id,
+        title: data.title,
+        description: data.description || '',
+        dueDate: data.due_date,
+        category: data.category,
+        priority: data.priority,
+        completed: data.completed,
+      };
+      
+      setTasks([...tasks, newTask]);
+      
+      toast({
+        title: "Task added",
+        description: `${task.title} has been added`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error adding task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Update an existing task
+  const updateTask = async (updatedTask: Task) => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to update tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('tasks')
+        .update({
+          title: updatedTask.title,
+          description: updatedTask.description,
+          due_date: updatedTask.dueDate,
+          category: updatedTask.category,
+          priority: updatedTask.priority,
+          completed: updatedTask.completed,
+        })
+        .eq('id', updatedTask.id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setTasks(tasks.map(task => task.id === updatedTask.id ? updatedTask : task));
+      
+      toast({
+        title: "Task updated",
+        description: `${updatedTask.title} has been updated`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Delete a task
+  const deleteTask = async (id: string) => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to delete tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setTasks(tasks.filter(task => task.id !== id));
+      
+      toast({
+        title: "Task deleted",
+        description: "Task has been removed",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add a new category
+  const addCategory = async (categoryName: string) => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to add categories",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (categories.includes(categoryName)) {
+        toast({
+          title: "Category exists",
+          description: "This category already exists",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('categories')
+        .insert({
+          name: categoryName,
+          user_id: user.id
+        });
+        
+      if (error) throw error;
+      
+      // Update local state
+      setCategories([...categories, categoryName]);
+      
+      toast({
+        title: "Category added",
+        description: `${categoryName} has been added`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error adding category",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Toggle task completion
+  const toggleTaskCompletion = async (id: string) => {
+    try {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to update tasks",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Find the task to update
+      const taskToUpdate = tasks.find(task => task.id === id);
+      if (!taskToUpdate) return;
+      
+      const updatedTask = { ...taskToUpdate, completed: !taskToUpdate.completed };
+      
+      // Update in Supabase
+      const { error } = await supabase
+        .from('tasks')
+        .update({ completed: updatedTask.completed })
+        .eq('id', id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setTasks(tasks.map(task => task.id === id ? updatedTask : task));
+    } catch (error: any) {
+      toast({
+        title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
     <TaskContext.Provider value={{
       tasks,
       categories,
+      loading,
       addTask,
       updateTask,
       deleteTask,

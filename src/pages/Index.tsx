@@ -5,10 +5,26 @@ import Header from '@/components/Header';
 import TaskList from '@/components/TaskList';
 import CalendarView from '@/components/CalendarView';
 import TaskModal from '@/components/TaskModal';
+import AuthForms from '@/components/AuthForms';
+import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const Index = () => {
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthForms />;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
