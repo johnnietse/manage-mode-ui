@@ -1,12 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
+import TaskList from '@/components/TaskList';
+import CalendarView from '@/components/CalendarView';
+import TaskModal from '@/components/TaskModal';
 
 const Index = () => {
+  const [view, setView] = useState<'list' | 'calendar'>('list');
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="flex h-screen overflow-hidden bg-gray-50">
+      <Sidebar />
+      
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <Header 
+          view={view} 
+          setView={setView} 
+          onNewTask={() => setIsTaskModalOpen(true)}
+        />
+        
+        <main className="flex-1 overflow-y-auto">
+          {view === 'list' ? (
+            <TaskList />
+          ) : (
+            <CalendarView />
+          )}
+        </main>
       </div>
+      
+      <TaskModal 
+        open={isTaskModalOpen} 
+        onOpenChange={setIsTaskModalOpen}
+      />
     </div>
   );
 };
