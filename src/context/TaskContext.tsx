@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -61,7 +62,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         description: task.description || '',
         dueDate: task.due_date,
         category: task.category,
-        priority: task.priority as 'low' | 'medium' | 'high', // Properly cast the priority
+        priority: task.priority as 'low' | 'medium' | 'high',
         completed: task.completed,
       }));
 
