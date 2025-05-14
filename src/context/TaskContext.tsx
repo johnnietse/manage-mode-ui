@@ -1,8 +1,8 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { DbTask } from '@/types/schema';
 
 export interface Task {
   id: string;
@@ -90,7 +90,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
 
       // Convert to our Task format
-      const formattedTasks: Task[] = data.map(task => ({
+      const formattedTasks: Task[] = (data as DbTask[]).map(task => ({
         id: task.id,
         title: task.title,
         description: task.description || '',
@@ -248,16 +248,17 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       
       // Convert back to our Task format
+      const dbTask = data as DbTask;
       const newTask: Task = {
-        id: data.id,
-        title: data.title,
-        description: data.description || '',
-        dueDate: data.due_date,
-        category: data.category,
-        priority: data.priority as 'low' | 'medium' | 'high',
-        completed: data.completed,
-        reminderDate: data.reminder_date || null,
-        recurrence: data.recurrence as 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' || 'none',
+        id: dbTask.id,
+        title: dbTask.title,
+        description: dbTask.description || '',
+        dueDate: dbTask.due_date,
+        category: dbTask.category,
+        priority: dbTask.priority as 'low' | 'medium' | 'high',
+        completed: dbTask.completed,
+        reminderDate: dbTask.reminder_date || null,
+        recurrence: dbTask.recurrence as 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' || 'none',
       };
       
       setTasks([...tasks, newTask]);
