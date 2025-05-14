@@ -92,109 +92,19 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
-  /* Enhanced task priority styling */
   .task-priority-low {
-    @apply bg-gradient-to-r from-green-50 to-green-100 text-green-800 border-l-4 border-green-500 shadow-sm;
+    @apply bg-green-100 text-green-800 border-l-4 border-green-500;
   }
   
   .task-priority-medium {
-    @apply bg-gradient-to-r from-yellow-50 to-yellow-100 text-yellow-800 border-l-4 border-yellow-500 shadow-sm;
+    @apply bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500;
   }
   
   .task-priority-high {
-    @apply bg-gradient-to-r from-red-50 to-red-100 text-red-800 border-l-4 border-red-500 shadow-sm;
-  }
-  
-  /* Professional transitions */
-  .page-transition {
-    @apply transition-all duration-300 ease-in-out;
-  }
-  
-  .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-md;
-  }
-  
-  .fade-in {
-    @apply opacity-0 animate-fade-in;
-  }
-  
-  .scale-in {
-    @apply scale-95 opacity-0 animate-scale-in;
-  }
-  
-  .slide-in-right {
-    @apply translate-x-4 opacity-0 animate-slide-in;
-  }
-  
-  .slide-in-left {
-    @apply -translate-x-4 opacity-0 animate-slide-in;
-  }
-  
-  .sidebar-item {
-    @apply relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:z-0 before:bg-gradient-to-r before:from-transparent before:to-transparent before:opacity-0 before:transition-all hover:before:opacity-100;
-  }
-}
-
-/* Enhanced animation keyframes */
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes scale-in {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes slide-in {
-  0% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Animations */
-@layer utilities {
-  .animate-fade-in {
-    animation: fade-in 0.4s ease-out forwards;
-  }
-  
-  .animate-scale-in {
-    animation: scale-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-  
-  .animate-slide-in {
-    animation: slide-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-  
-  .animation-delay-100 {
-    animation-delay: 100ms;
-  }
-  
-  .animation-delay-200 {
-    animation-delay: 200ms;
-  }
-  
-  .animation-delay-300 {
-    animation-delay: 300ms;
+    @apply bg-red-100 text-red-800 border-l-4 border-red-500;
   }
 }
