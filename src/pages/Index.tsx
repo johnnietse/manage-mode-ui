@@ -6,11 +6,12 @@ import TaskList from '@/components/TaskList';
 import CalendarView from '@/components/CalendarView';
 import TaskModal from '@/components/TaskModal';
 import AuthForms from '@/components/AuthForms';
+import TaskStatistics from '@/components/TaskStatistics';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 const Index = () => {
-  const [view, setView] = useState<'list' | 'calendar'>('list');
+  const [view, setView] = useState<'list' | 'calendar' | 'stats'>('list');
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const { user, loading } = useAuth();
 
@@ -27,7 +28,7 @@ const Index = () => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-background text-foreground">
       <Sidebar />
       
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -40,8 +41,10 @@ const Index = () => {
         <main className="flex-1 overflow-y-auto">
           {view === 'list' ? (
             <TaskList />
-          ) : (
+          ) : view === 'calendar' ? (
             <CalendarView />
+          ) : (
+            <TaskStatistics />
           )}
         </main>
       </div>

@@ -37,6 +37,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import ReminderSetting from './ReminderSetting';
+import RecurrenceSelect from './RecurrenceSelect';
+import { RecurrencePattern } from './RecurrenceSelect';
 
 interface TaskModalProps {
   open: boolean;
@@ -51,6 +54,8 @@ const TaskModal = ({ open, onOpenChange, editTask }: TaskModalProps) => {
     defaultValues: editTask ? {
       ...editTask,
       dueDate: new Date(editTask.dueDate),
+      reminderDate: editTask.reminderDate ? new Date(editTask.reminderDate) : null,
+      recurrence: editTask.recurrence || 'none',
     } : {
       title: '',
       description: '',
@@ -58,6 +63,8 @@ const TaskModal = ({ open, onOpenChange, editTask }: TaskModalProps) => {
       category: categories[0],
       priority: 'medium' as const,
       completed: false,
+      reminderDate: null,
+      recurrence: 'none' as RecurrencePattern,
     },
   });
 
@@ -65,6 +72,7 @@ const TaskModal = ({ open, onOpenChange, editTask }: TaskModalProps) => {
     const formattedData = {
       ...data,
       dueDate: format(data.dueDate, 'yyyy-MM-dd'),
+      reminderDate: data.reminderDate ? format(data.reminderDate, 'yyyy-MM-dd HH:mm') : null,
     };
     
     if (editTask) {
@@ -202,6 +210,36 @@ const TaskModal = ({ open, onOpenChange, editTask }: TaskModalProps) => {
                 </FormItem>
               )}
             />
+
+            <div className="flex gap-4">
+              <FormField
+                control={form.control}
+                name="reminderDate"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <ReminderSetting 
+                      value={field.value} 
+                      onChange={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="recurrence"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <RecurrenceSelect 
+                      value={field.value as RecurrencePattern} 
+                      onChange={field.onChange}
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <DialogFooter>
               <Button type="submit">

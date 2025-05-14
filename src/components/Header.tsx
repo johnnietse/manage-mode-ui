@@ -1,36 +1,53 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Calendar, List } from 'lucide-react';
+import { PlusIcon, ListIcon, CalendarIcon } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
-  view: 'list' | 'calendar';
-  setView: (view: 'list' | 'calendar') => void;
+  view: 'list' | 'calendar' | 'stats';
+  setView: (view: 'list' | 'calendar' | 'stats') => void;
   onNewTask: () => void;
 }
 
 const Header = ({ view, setView, onNewTask }: HeaderProps) => {
   return (
-    <div className="flex justify-between items-center p-6 border-b">
-      <Tabs value={view} onValueChange={(v) => setView(v as 'list' | 'calendar')}>
-        <TabsList>
-          <TabsTrigger value="list" className="flex items-center gap-2">
-            <List size={16} />
-            List View
-          </TabsTrigger>
-          <TabsTrigger value="calendar" className="flex items-center gap-2">
-            <Calendar size={16} />
-            Calendar View
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+    <header className="flex justify-between items-center p-4 border-b">
+      <div className="flex items-center space-x-2">
+        <Button
+          variant={view === 'list' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('list')}
+        >
+          <ListIcon className="h-4 w-4 mr-1" />
+          List
+        </Button>
+        <Button
+          variant={view === 'calendar' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('calendar')}
+        >
+          <CalendarIcon className="h-4 w-4 mr-1" />
+          Calendar
+        </Button>
+        <Button
+          variant={view === 'stats' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setView('stats')}
+        >
+          <CalendarIcon className="h-4 w-4 mr-1" />
+          Statistics
+        </Button>
+      </div>
       
-      <Button onClick={onNewTask} className="flex items-center gap-2">
-        <Plus size={16} />
-        New Task
-      </Button>
-    </div>
+      <div className="flex items-center space-x-2">
+        <ThemeToggle />
+        <Button onClick={onNewTask}>
+          <PlusIcon className="h-4 w-4 mr-1" />
+          New Task
+        </Button>
+      </div>
+    </header>
   );
 };
 

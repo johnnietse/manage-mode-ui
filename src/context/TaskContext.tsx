@@ -12,6 +12,8 @@ export interface Task {
   category: string;
   priority: 'low' | 'medium' | 'high';
   completed: boolean;
+  reminderDate?: string | null;
+  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 }
 
 interface TaskContextType {
@@ -24,6 +26,8 @@ interface TaskContextType {
   addCategory: (category: string) => Promise<void>;
   toggleTaskCompletion: (id: string) => Promise<void>;
   filteredTasks: (category: string) => Task[];
+  getTotalTasksByCategory: () => Record<string, number>;
+  getCompletedTasksByCategory: () => Record<string, number>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -45,6 +49,35 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  // Check for reminders every minute
+  useEffect(() => {
+    if (tasks.length === 0) return;
+    
+    const checkReminders = () => {
+      const now = new Date();
+      const tasksDueWithinFiveMinutes = tasks.filter(task => {
+        if (!task.reminderDate || task.completed) return false;
+        
+        const reminderDate = new Date(task.reminderDate);
+        const diffInMinutes = (reminderDate.getTime() - now.getTime()) / (1000 * 60);
+        return diffInMinutes >= 0 && diffInMinutes <= 5;
+      });
+      
+      tasksDueWithinFiveMinutes.forEach(task => {
+        toast({
+          title: "Reminder",
+          description: `Task "${task.title}" is due soon!`,
+        });
+      });
+    };
+
+    // Check immediately and then set interval
+    checkReminders();
+    const intervalId = setInterval(checkReminders, 60000); // Check every minute
+    
+    return () => clearInterval(intervalId);
+  }, [tasks]);
+
   // Fetch tasks from Supabase
   const fetchTasks = async () => {
     try {
@@ -65,6 +98,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         category: task.category,
         priority: task.priority as 'low' | 'medium' | 'high',
         completed: task.completed,
+        reminderDate: task.reminder_date || null,
+        recurrence: task.recurrence || 'none',
       }));
 
       setTasks(formattedTasks);
@@ -87,6 +122,79 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     }
     return tasks.filter(task => task.category === category);
   };
+
+  // Get statistics on total tasks by category
+  const getTotalTasksByCategory = () => {
+    return categories
+      .filter(category => category !== 'All')
+      .reduce((acc, category) => {
+        acc[category] = tasks.filter(task => task.category === category).length;
+        return acc;
+      }, {} as Record<string, number>);
+  };
+
+  // Get statistics on completed tasks by category
+  const getCompletedTasksByCategory = () => {
+    return categories
+      .filter(category => category !== 'All')
+      .reduce((acc, category) => {
+        acc[category] = tasks.filter(task => task.category === category && task.completed).length;
+        return acc;
+      }, {} as Record<string, number>);
+  };
+
+  // Check for recurring tasks that need to be regenerated
+  useEffect(() => {
+    if (tasks.length === 0) return;
+
+    const regenerateRecurringTasks = async () => {
+      const today = new Date();
+      const completedRecurringTasks = tasks.filter(task => {
+        if (!task.recurrence || task.recurrence === 'none' || !task.completed) return false;
+        
+        const dueDate = new Date(task.dueDate);
+        return dueDate < today; // Task is past due and completed
+      });
+      
+      for (const task of completedRecurringTasks) {
+        let newDueDate = new Date(task.dueDate);
+        
+        switch (task.recurrence) {
+          case 'daily':
+            newDueDate.setDate(newDueDate.getDate() + 1);
+            break;
+          case 'weekly':
+            newDueDate.setDate(newDueDate.getDate() + 7);
+            break;
+          case 'monthly':
+            newDueDate.setMonth(newDueDate.getMonth() + 1);
+            break;
+          case 'yearly':
+            newDueDate.setFullYear(newDueDate.getFullYear() + 1);
+            break;
+        }
+        
+        // Create new task as a duplicate with updated due date
+        const newTask: Omit<Task, 'id'> = {
+          title: task.title,
+          description: task.description,
+          dueDate: newDueDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+          category: task.category,
+          priority: task.priority as 'low' | 'medium' | 'high',
+          completed: false,
+          reminderDate: task.reminderDate,
+          recurrence: task.recurrence,
+        };
+        
+        // Create the new task in the database
+        await addTask(newTask);
+        // Mark the existing task as no longer recurring to prevent duplication
+        await updateTask({ ...task, recurrence: 'none' });
+      }
+    };
+    
+    regenerateRecurringTasks();
+  }, [tasks]);
 
   // Fetch categories from Supabase
   const fetchCategories = async () => {
@@ -131,6 +239,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
           priority: task.priority,
           completed: task.completed,
           user_id: user.id,
+          reminder_date: task.reminderDate || null,
+          recurrence: task.recurrence || 'none',
         })
         .select()
         .single();
@@ -146,6 +256,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         category: data.category,
         priority: data.priority as 'low' | 'medium' | 'high',
         completed: data.completed,
+        reminderDate: data.reminder_date || null,
+        recurrence: data.recurrence || 'none',
       };
       
       setTasks([...tasks, newTask]);
@@ -184,6 +296,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
           category: updatedTask.category,
           priority: updatedTask.priority,
           completed: updatedTask.completed,
+          reminder_date: updatedTask.reminderDate || null,
+          recurrence: updatedTask.recurrence || 'none',
         })
         .eq('id', updatedTask.id);
         
@@ -334,6 +448,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       addCategory,
       toggleTaskCompletion,
       filteredTasks,
+      getTotalTasksByCategory,
+      getCompletedTasksByCategory,
     }}>
       {children}
     </TaskContext.Provider>
