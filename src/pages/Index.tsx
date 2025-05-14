@@ -29,7 +29,7 @@ const Index = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
-      <Sidebar />
+      <Sidebar onViewChange={setView} currentView={view} />
       
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header 
@@ -38,7 +38,7 @@ const Index = () => {
           onNewTask={() => setIsTaskModalOpen(true)}
         />
         
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-6">
           {view === 'list' ? (
             <TaskList />
           ) : view === 'calendar' ? (

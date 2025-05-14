@@ -7,7 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, LogOut, CheckSquare2, Calendar, BarChart2, Settings } from 'lucide-react';
 
-const Sidebar = () => {
+interface SidebarProps {
+  onViewChange: (view: 'list' | 'calendar' | 'stats') => void;
+  currentView: 'list' | 'calendar' | 'stats';
+}
+
+const Sidebar = ({ onViewChange, currentView }: SidebarProps) => {
   const { categories, addCategory } = useTaskContext();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [newCategory, setNewCategory] = useState('');
@@ -41,11 +46,26 @@ const Sidebar = () => {
     }
   }, []);
 
-  const NavItem = ({ icon: Icon, label, onClick }: { icon: React.ElementType, label: string, onClick?: () => void }) => (
+  const NavItem = ({ 
+    icon: Icon, 
+    label, 
+    onClick, 
+    isActive = false 
+  }: { 
+    icon: React.ElementType, 
+    label: string, 
+    onClick?: () => void,
+    isActive?: boolean
+  }) => (
     <Button
       onClick={onClick}
       variant="ghost"
-      className="flex w-full items-center justify-start gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-300"
+      className={cn(
+        "flex w-full items-center justify-start gap-2 transition-all duration-300",
+        isActive 
+          ? "text-sidebar-foreground bg-sidebar-accent shadow-md" 
+          : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+      )}
     >
       <Icon size={16} />
       <span>{label}</span>
@@ -64,9 +84,24 @@ const Sidebar = () => {
       <div className="p-4 fade-in animate-fade-in animation-delay-100">
         <h2 className="text-sm font-medium mb-4 text-sidebar-foreground/70 uppercase tracking-wider">Dashboard</h2>
         <nav className="space-y-1">
-          <NavItem icon={CheckSquare2} label="Tasks" />
-          <NavItem icon={Calendar} label="Calendar" />
-          <NavItem icon={BarChart2} label="Analytics" />
+          <NavItem 
+            icon={CheckSquare2} 
+            label="Tasks" 
+            onClick={() => onViewChange('list')} 
+            isActive={currentView === 'list'}
+          />
+          <NavItem 
+            icon={Calendar} 
+            label="Calendar" 
+            onClick={() => onViewChange('calendar')} 
+            isActive={currentView === 'calendar'}
+          />
+          <NavItem 
+            icon={BarChart2} 
+            label="Analytics" 
+            onClick={() => onViewChange('stats')} 
+            isActive={currentView === 'stats'}
+          />
           <NavItem icon={Settings} label="Settings" />
         </nav>
       </div>

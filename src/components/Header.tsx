@@ -26,6 +26,9 @@ const HeaderButton: React.FC<{
     )}
   >
     {children}
+    {active && (
+      <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary animate-slide-in-from-left" />
+    )}
   </Button>
 );
 
@@ -60,7 +63,7 @@ const Header = ({ view, setView, onNewTask }: HeaderProps) => {
         <ThemeToggle />
         <Button 
           onClick={onNewTask}
-          className="shadow-md hover:shadow-lg transition-all duration-300"
+          className="shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90"
         >
           <PlusIcon className="h-4 w-4 mr-1" />
           New Task
