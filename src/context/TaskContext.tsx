@@ -99,7 +99,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         priority: task.priority as 'low' | 'medium' | 'high',
         completed: task.completed,
         reminderDate: task.reminder_date || null,
-        recurrence: task.recurrence || 'none',
+        recurrence: task.recurrence as 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' || 'none',
       }));
 
       setTasks(formattedTasks);
@@ -180,7 +180,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
           description: task.description,
           dueDate: newDueDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
           category: task.category,
-          priority: task.priority as 'low' | 'medium' | 'high',
+          priority: task.priority,
           completed: false,
           reminderDate: task.reminderDate,
           recurrence: task.recurrence,
@@ -247,7 +247,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       
       if (error) throw error;
       
-      // Convert back to our Task format and add to state
+      // Convert back to our Task format
       const newTask: Task = {
         id: data.id,
         title: data.title,
@@ -257,7 +257,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         priority: data.priority as 'low' | 'medium' | 'high',
         completed: data.completed,
         reminderDate: data.reminder_date || null,
-        recurrence: data.recurrence || 'none',
+        recurrence: data.recurrence as 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' || 'none',
       };
       
       setTasks([...tasks, newTask]);
