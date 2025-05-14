@@ -1,24 +1,50 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTaskContext, Task } from '@/context/TaskContext';
 import TaskCard from './TaskCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TaskList = () => {
-  const { tasks, toggleTaskCompletion } = useTaskContext();
+  const { toggleTaskCompletion, filteredTasks } = useTaskContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('dueDate');
   const [filterPriority, setFilterPriority] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  
+  // Listen for category changes from Sidebar
+  useEffect(() => {
+    const handleCategoryChange = (event: CustomEvent) => {
+      setSelectedCategory(event.detail.category);
+    };
+    
+    // Get initial category from sessionStorage
+    const savedCategory = sessionStorage.getItem('selectedCategory');
+    if (savedCategory) {
+      setSelectedCategory(savedCategory);
+    }
+    
+    // Add event listener for category changes
+    window.addEventListener('categoryChanged', handleCategoryChange as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('categoryChanged', handleCategoryChange as EventListener);
+    };
+  }, []);
 
-  const filteredTasks = tasks.filter(task => {
+  // Get tasks for the selected category
+  const categoryTasks = filteredTasks(selectedCategory);
+
+  // Further filter and sort tasks
+  const tasksToDisplay = categoryTasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           task.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
     return matchesSearch && matchesPriority;
   });
 
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
+  const sortedTasks = [...tasksToDisplay].sort((a, b) => {
     switch (sortBy) {
       case 'dueDate':
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
@@ -35,7 +61,9 @@ const TaskList = () => {
 
   return (
     <div className="p-6 flex-1 overflow-y-auto">
-      <h2 className="text-2xl font-bold mb-6">Tasks</h2>
+      <h2 className="text-2xl font-bold mb-6">
+        {selectedCategory === 'All' ? 'All Tasks' : `${selectedCategory} Tasks`}
+      </h2>
       
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <Input

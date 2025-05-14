@@ -23,6 +23,7 @@ interface TaskContextType {
   deleteTask: (id: string) => Promise<void>;
   addCategory: (category: string) => Promise<void>;
   toggleTaskCompletion: (id: string) => Promise<void>;
+  filteredTasks: (category: string) => Task[];
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -77,6 +78,14 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Filter tasks based on category
+  const filteredTasks = (category: string) => {
+    if (category === 'All') {
+      return tasks;
+    }
+    return tasks.filter(task => task.category === category);
   };
 
   // Fetch categories from Supabase
@@ -324,6 +333,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       deleteTask,
       addCategory,
       toggleTaskCompletion,
+      filteredTasks,
     }}>
       {children}
     </TaskContext.Provider>
