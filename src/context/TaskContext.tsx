@@ -144,7 +144,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         description: data.description || '',
         dueDate: data.due_date,
         category: data.category,
-        priority: data.priority,
+        priority: data.priority as 'low' | 'medium' | 'high',
         completed: data.completed,
       };
       
