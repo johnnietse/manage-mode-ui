@@ -10,7 +10,7 @@ import { Toaster } from '@/components/ui/toaster';
 function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider defaultTheme="system" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <AuthProvider>
           <TaskProvider>
             <Routes>
