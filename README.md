@@ -1,6 +1,6 @@
 # TaskMaster 🧠📅
 
-**TaskMaster** is a modern, visually stunning, and intuitive task management web app inspired by popular productivity tools like Todoist and ClickUp — built with a clean, responsive UI and powerful task organization features. Built with **React**, **Tailwind CSS**, and **Supabase**.
+Welcome to my second Lovable project! **TaskMaster** is a modern, visually stunning, and intuitive task management web app inspired by popular productivity tools like Todoist and ClickUp — built with a clean, responsive UI and powerful task organization features. Built with **React**, **Tailwind CSS**, and **Supabase**.
 
 ## 🌟 Features
 
