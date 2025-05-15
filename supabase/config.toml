@@ -1,2 +1,11 @@
 
 project_id = "qdritjldksrbshllwojp"
+
+[auth.external.apple]
+enabled = true
+
+[auth.external.google]  
+enabled = true
+
+[auth.external.facebook]
+enabled = true
