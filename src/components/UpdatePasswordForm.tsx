@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
@@ -26,6 +25,8 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 const UpdatePasswordForm = () => {
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const { updatePassword } = useAuth();
   const navigate = useNavigate();
 
   const form = useForm<PasswordFormValues>({
@@ -39,24 +40,23 @@ const UpdatePasswordForm = () => {
   const handleUpdatePassword = async (data: PasswordFormValues) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.updateUser({ password: data.password });
+      await updatePassword(data.password);
       
-      if (error) throw error;
-      
+      setSuccess(true);
       toast({
         title: "Password updated",
         description: "Your password has been changed successfully",
       });
       
-      // Navigate to main page after successful password update
-      setTimeout(() => navigate('/'), 1500);
+      // Navigate to main page after successful password update with delay
+      setTimeout(() => navigate('/'), 2000);
     } catch (error: any) {
+      console.error('Password update error:', error);
       toast({
         title: "Error updating password",
         description: error.message || "An error occurred while updating your password",
         variant: "destructive",
       });
-      console.error('Password update error:', error);
     } finally {
       setLoading(false);
     }
@@ -71,58 +71,66 @@ const UpdatePasswordForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleUpdatePassword)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="Enter your new password" 
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="password" 
-                      placeholder="Confirm your new password" 
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Updating...
-                </>
-              ) : "Update Password"}
-            </Button>
-          </form>
-        </Form>
+        {success ? (
+          <div className="text-center py-4">
+            <p className="mb-2 text-green-600 dark:text-green-400 font-medium">Password updated successfully!</p>
+            <p className="text-sm text-muted-foreground">Redirecting to login page...</p>
+            <Loader2 className="w-6 h-6 mx-auto mt-4 animate-spin text-primary" />
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleUpdatePassword)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password" 
+                        placeholder="Enter your new password" 
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password" 
+                        placeholder="Confirm your new password" 
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Updating...
+                  </>
+                ) : "Update Password"}
+              </Button>
+            </form>
+          </Form>
+        )}
       </CardContent>
     </Card>
   );

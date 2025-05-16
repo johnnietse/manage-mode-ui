@@ -20,11 +20,22 @@ const ResetPassword = () => {
         setLoading(true);
         
         // Check if URL contains access_token and type=recovery
-        const hashParams = new URLSearchParams(location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const type = hashParams.get('type');
+        // Use hash fragment directly from location.hash
+        const hash = location.hash;
+        console.log('Reset link hash:', hash);
         
-        if (accessToken && type === 'recovery') {
+        if (hash && hash.includes('access_token=') && hash.includes('type=recovery')) {
+          // Extract the access token from the hash
+          const accessToken = hash
+            .substring(1) // Remove the leading #
+            .split('&')
+            .find(param => param.startsWith('access_token='))
+            ?.split('=')[1];
+            
+          if (!accessToken) {
+            throw new Error('Invalid access token in URL');
+          }
+          
           // Set the session from the recovery token
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
@@ -33,21 +44,24 @@ const ResetPassword = () => {
           
           if (error) {
             console.error('Error setting session:', error);
-            setValidLink(false);
-            toast({
-              title: "Invalid or expired link",
-              description: "Please request a new password reset link",
-              variant: "destructive",
-            });
+            throw error;
           } else {
             setValidLink(true);
+            console.log('Successfully set recovery session');
           }
         } else {
+          console.error('Invalid reset link format', hash);
           setValidLink(false);
+          throw new Error('Invalid reset link format');
         }
       } catch (error) {
         console.error('Error checking password recovery session:', error);
         setValidLink(false);
+        toast({
+          title: "Invalid or expired link",
+          description: "Please request a new password reset link",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }

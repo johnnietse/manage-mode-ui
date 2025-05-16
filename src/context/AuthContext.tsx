@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
@@ -122,11 +121,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true };
     } catch (error: any) {
       console.error("Reset password error:", error);
-      toast({
-        title: "Error resetting password",
-        description: error.message,
-        variant: "destructive",
-      });
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
@@ -136,9 +130,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updatePassword = async (password: string) => {
     try {
       setLoading(true);
+      
+      if (!password || password.length < 6) {
+        throw new Error("Password must be at least 6 characters");
+      }
+      
       const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Update password error:", error);
+        throw error;
+      }
+      
+      return;
     } catch (error: any) {
+      console.error("Update password error:", error);
       toast({
         title: "Error updating password",
         description: error.message,

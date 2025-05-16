@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +25,7 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
   const { resetPassword } = useAuth();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const form = useForm<EmailFormValues>({
     resolver: zodResolver(emailSchema),
@@ -36,6 +37,7 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
   const handleResetPassword = async (data: EmailFormValues) => {
     try {
       setLoading(true);
+      setErrorMsg(null);
       const { success, error } = await resetPassword(data.email);
       
       if (!success) {
@@ -48,6 +50,7 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
         description: "Check your email for a link to reset your password",
       });
     } catch (error: any) {
+      setErrorMsg(error.message || "An error occurred while sending the reset link");
       toast({
         title: "Error",
         description: error.message || "An error occurred while sending the reset link",
@@ -91,6 +94,10 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
                 )}
               />
               
+              {errorMsg && (
+                <p className="text-sm text-destructive">{errorMsg}</p>
+              )}
+              
               <Button 
                 type="submit" 
                 className="w-full" 
@@ -107,6 +114,7 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
           </Form>
         ) : (
           <div className="text-center py-4">
+            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
             <p className="mb-4">A password reset link has been sent to your email address.</p>
             <p className="text-sm text-muted-foreground">
               If you don't see it, check your spam folder or try again.
