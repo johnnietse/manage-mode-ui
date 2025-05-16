@@ -2,40 +2,45 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 type ResetPasswordFormProps = {
   onBack: () => void;
 };
 
+const emailSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+});
+
+type EmailFormValues = z.infer<typeof emailSchema>;
+
 const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
-  const [email, setEmail] = useState('');
+  const { resetPassword } = useAuth();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !email.includes('@')) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
-      return;
-    }
+  const form = useForm<EmailFormValues>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
 
+  const handleResetPassword = async (data: EmailFormValues) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      const { success, error } = await resetPassword(data.email);
       
-      if (error) throw error;
+      if (!success) {
+        throw new Error(error);
+      }
       
       setSubmitted(true);
       toast({
@@ -48,6 +53,7 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
         description: error.message || "An error occurred while sending the reset link",
         variant: "destructive",
       });
+      console.error('Reset password error:', error);
     } finally {
       setLoading(false);
     }
@@ -65,26 +71,40 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
       </CardHeader>
       <CardContent>
         {!submitted ? (
-          <form onSubmit={handleResetPassword} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleResetPassword)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="name@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? "Sending..." : "Send Reset Link"}
-            </Button>
-          </form>
+              
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : "Send Reset Link"}
+              </Button>
+            </form>
+          </Form>
         ) : (
           <div className="text-center py-4">
             <p className="mb-4">A password reset link has been sent to your email address.</p>
