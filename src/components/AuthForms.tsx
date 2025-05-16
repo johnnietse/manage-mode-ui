@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import ResetPasswordForm from './ResetPasswordForm';
 
 export function AuthForms() {
   const [activeTab, setActiveTab] = useState<string>('login');
+  const [showResetForm, setShowResetForm] = useState(false);
   const { signIn, signUp, loading } = useAuth();
 
   const [loginEmail, setLoginEmail] = useState('');
@@ -35,6 +37,14 @@ export function AuthForms() {
       console.error('Registration error:', error);
     }
   };
+
+  if (showResetForm) {
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4 py-12">
+        <ResetPasswordForm onBack={() => setShowResetForm(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-12">
@@ -73,6 +83,14 @@ export function AuthForms() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
+                    <Button 
+                      variant="link" 
+                      className="px-0 font-normal text-sm"
+                      type="button"
+                      onClick={() => setShowResetForm(true)}
+                    >
+                      Forgot password?
+                    </Button>
                   </div>
                   <Input
                     id="password"

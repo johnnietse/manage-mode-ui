@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
+import ResetPassword from '@/pages/ResetPassword';
 import { AuthProvider } from '@/context/AuthContext';
 import { TaskProvider } from '@/context/TaskContext';
 import { ThemeProvider } from 'next-themes';
@@ -15,6 +16,7 @@ function App() {
           <TaskProvider>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
