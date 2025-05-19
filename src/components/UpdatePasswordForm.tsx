@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const passwordSchema = z.object({
   password: z.string()
@@ -26,6 +26,7 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 const UpdatePasswordForm = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { updatePassword, user } = useAuth();
   const navigate = useNavigate();
 
@@ -42,6 +43,7 @@ const UpdatePasswordForm = () => {
   const handleUpdatePassword = async (data: PasswordFormValues) => {
     try {
       setLoading(true);
+      setError(null);
       console.log("Attempting to update password");
       
       await updatePassword(data.password);
@@ -57,6 +59,7 @@ const UpdatePasswordForm = () => {
       setTimeout(() => navigate('/'), 2000);
     } catch (error: any) {
       console.error('Password update error:', error);
+      setError(error.message || "An error occurred while updating your password");
       toast({
         title: "Error updating password",
         description: error.message || "An error occurred while updating your password",
@@ -122,6 +125,13 @@ const UpdatePasswordForm = () => {
                   </FormItem>
                 )}
               />
+              
+              {error && (
+                <div className="flex items-center gap-2 p-3 mt-2 text-sm text-destructive bg-destructive/10 rounded-md">
+                  <AlertCircle className="w-4 h-4" />
+                  <p>{error}</p>
+                </div>
+              )}
               
               <Button 
                 type="submit" 

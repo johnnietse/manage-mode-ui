@@ -123,12 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       console.log("Requesting password reset for:", email);
       
-      // Get the base URL of the current page
-      const baseUrl = window.location.origin;
-      console.log("Using redirect URL:", `${baseUrl}/reset-password`);
+      // Get the CURRENT app URL (not hard-coded localhost)
+      const currentUrl = window.location.origin;
+      console.log("Using redirect URL:", `${currentUrl}/reset-password`);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${baseUrl}/reset-password`,
+        redirectTo: `${currentUrl}/reset-password`,
       });
       
       if (error) {
