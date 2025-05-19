@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        console.log("Auth state changed:", _event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -33,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -65,7 +68,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({
+      // Create a new user account with email and password
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -74,12 +78,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
         },
       });
+      
       if (error) throw error;
+      
+      console.log("User signup successful:", data);
+      
       toast({
         title: "Account created",
         description: "Please check your email for verification",
       });
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({
         title: "Error signing up",
         description: error.message,
@@ -112,12 +121,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPassword = async (email: string) => {
     try {
       setLoading(true);
+      console.log("Requesting password reset for:", email);
+      
+      // Get the base URL of the current page
+      const baseUrl = window.location.origin;
+      console.log("Using redirect URL:", `${baseUrl}/reset-password`);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${baseUrl}/reset-password`,
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Reset password error:", error);
+        throw error;
+      }
       
+      console.log("Password reset email sent successfully");
       return { success: true };
     } catch (error: any) {
       console.error("Reset password error:", error);
@@ -135,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Password must be at least 6 characters");
       }
       
+      console.log("Updating password...");
       const { error } = await supabase.auth.updateUser({ password });
       
       if (error) {
@@ -142,6 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
       
+      console.log("Password updated successfully");
       return;
     } catch (error: any) {
       console.error("Update password error:", error);

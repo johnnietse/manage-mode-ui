@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,7 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>("");
 
   const form = useForm<EmailFormValues>({
     resolver: zodResolver(emailSchema),
@@ -38,6 +39,9 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
     try {
       setLoading(true);
       setErrorMsg(null);
+      setEmail(data.email);
+      
+      console.log("Requesting password reset for:", data.email);
       const { success, error } = await resetPassword(data.email);
       
       if (!success) {
@@ -95,7 +99,10 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
               />
               
               {errorMsg && (
-                <p className="text-sm text-destructive">{errorMsg}</p>
+                <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+                  <AlertCircle className="w-4 h-4" />
+                  <p>{errorMsg}</p>
+                </div>
               )}
               
               <Button 
@@ -115,10 +122,22 @@ const ResetPasswordForm = ({ onBack }: ResetPasswordFormProps) => {
         ) : (
           <div className="text-center py-4">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <p className="mb-4">A password reset link has been sent to your email address.</p>
-            <p className="text-sm text-muted-foreground">
-              If you don't see it, check your spam folder or try again.
+            <p className="mb-4">A password reset link has been sent to:</p>
+            <p className="font-medium mb-4">{email}</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              If you don't see it within a few minutes, check your spam folder.
             </p>
+            <Button 
+              variant="outline" 
+              className="mt-2" 
+              onClick={() => {
+                setSubmitted(false);
+                setEmail("");
+                form.reset();
+              }}
+            >
+              Send another link
+            </Button>
           </div>
         )}
       </CardContent>

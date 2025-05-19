@@ -20,7 +20,6 @@ const ResetPassword = () => {
         setLoading(true);
         
         // Check if URL contains access_token and type=recovery
-        // Use hash fragment directly from location.hash
         const hash = location.hash;
         console.log('Reset link hash:', hash);
         
@@ -33,11 +32,14 @@ const ResetPassword = () => {
             ?.split('=')[1];
             
           if (!accessToken) {
+            console.error('No access token found in URL');
             throw new Error('Invalid access token in URL');
           }
           
+          console.log('Found access token in URL, attempting to set session');
+          
           // Set the session from the recovery token
-          const { error } = await supabase.auth.setSession({
+          const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: '',
           });
@@ -46,15 +48,15 @@ const ResetPassword = () => {
             console.error('Error setting session:', error);
             throw error;
           } else {
+            console.log('Successfully set recovery session:', data.session?.user?.email);
             setValidLink(true);
-            console.log('Successfully set recovery session');
           }
         } else {
-          console.error('Invalid reset link format', hash);
+          console.error('Invalid reset link format:', hash);
           setValidLink(false);
           throw new Error('Invalid reset link format');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error checking password recovery session:', error);
         setValidLink(false);
         toast({

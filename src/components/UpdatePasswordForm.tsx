@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 
 const passwordSchema = z.object({
   password: z.string()
@@ -26,8 +26,10 @@ type PasswordFormValues = z.infer<typeof passwordSchema>;
 const UpdatePasswordForm = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { updatePassword } = useAuth();
+  const { updatePassword, user } = useAuth();
   const navigate = useNavigate();
+
+  console.log("Current user in UpdatePasswordForm:", user?.email);
 
   const form = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
@@ -40,8 +42,11 @@ const UpdatePasswordForm = () => {
   const handleUpdatePassword = async (data: PasswordFormValues) => {
     try {
       setLoading(true);
+      console.log("Attempting to update password");
+      
       await updatePassword(data.password);
       
+      console.log("Password updated successfully");
       setSuccess(true);
       toast({
         title: "Password updated",
@@ -68,11 +73,13 @@ const UpdatePasswordForm = () => {
         <CardTitle className="text-2xl font-bold text-center">Update Password</CardTitle>
         <CardDescription className="text-center">
           Create a new password for your account
+          {user?.email && <span className="block mt-1 font-medium">{user.email}</span>}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {success ? (
           <div className="text-center py-4">
+            <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500" />
             <p className="mb-2 text-green-600 dark:text-green-400 font-medium">Password updated successfully!</p>
             <p className="text-sm text-muted-foreground">Redirecting to login page...</p>
             <Loader2 className="w-6 h-6 mx-auto mt-4 animate-spin text-primary" />
