@@ -123,12 +123,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       console.log("Requesting password reset for:", email);
       
-      // Get the CURRENT app URL (not hard-coded localhost)
-      const currentUrl = window.location.origin;
-      console.log("Using redirect URL:", `${currentUrl}/reset-password`);
+      // Get the actual deployed URL (not hardcoded)
+      const deployedUrl = window.location.origin;
+      const resetUrl = `${deployedUrl}/reset-password`;
+      
+      console.log("Using reset redirect URL:", resetUrl);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${currentUrl}/reset-password`,
+        redirectTo: resetUrl,
       });
       
       if (error) {
@@ -136,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
       
-      console.log("Password reset email sent successfully");
+      console.log("Password reset email sent successfully to:", email);
       return { success: true };
     } catch (error: any) {
       console.error("Reset password error:", error);
@@ -163,6 +165,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       console.log("Password updated successfully");
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully updated",
+      });
       return;
     } catch (error: any) {
       console.error("Update password error:", error);

@@ -52,16 +52,16 @@ const ResetPassword = () => {
             setValidLink(true);
           }
         } else {
-          console.error('Invalid reset link format:', hash);
+          console.error('Invalid or missing reset link parameters:', hash);
           setValidLink(false);
-          throw new Error('Invalid reset link format');
+          throw new Error('Invalid reset link format. Make sure you use the complete link from your email.');
         }
       } catch (error: any) {
         console.error('Error checking password recovery session:', error);
         setValidLink(false);
         toast({
           title: "Invalid or expired link",
-          description: "Please request a new password reset link",
+          description: error.message || "Please request a new password reset link",
           variant: "destructive",
         });
       } finally {
