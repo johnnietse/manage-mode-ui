@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const passwordSchema = z.object({
   password: z.string()
@@ -27,6 +27,8 @@ const UpdatePasswordForm = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { updatePassword, user } = useAuth();
   const navigate = useNavigate();
 
@@ -44,27 +46,20 @@ const UpdatePasswordForm = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log("Attempting to update password");
+      console.log("Attempting to update password for user:", user?.email);
       
       await updatePassword(data.password);
       
       console.log("Password updated successfully");
       setSuccess(true);
-      toast({
-        title: "Password updated",
-        description: "Your password has been changed successfully",
-      });
       
-      // Navigate to main page after successful password update with delay
-      setTimeout(() => navigate('/'), 2000);
+      // Navigate to main page after successful password update
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 2000);
     } catch (error: any) {
       console.error('Password update error:', error);
       setError(error.message || "An error occurred while updating your password");
-      toast({
-        title: "Error updating password",
-        description: error.message || "An error occurred while updating your password",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
@@ -76,16 +71,27 @@ const UpdatePasswordForm = () => {
         <CardTitle className="text-2xl font-bold text-center">Update Password</CardTitle>
         <CardDescription className="text-center">
           Create a new password for your account
-          {user?.email && <span className="block mt-1 font-medium">{user.email}</span>}
+          {user?.email && (
+            <span className="block mt-2 font-medium text-foreground">
+              {user.email}
+            </span>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {success ? (
-          <div className="text-center py-4">
-            <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-green-500" />
-            <p className="mb-2 text-green-600 dark:text-green-400 font-medium">Password updated successfully!</p>
-            <p className="text-sm text-muted-foreground">Redirecting to login page...</p>
-            <Loader2 className="w-6 h-6 mx-auto mt-4 animate-spin text-primary" />
+          <div className="text-center py-6">
+            <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-green-500" />
+            <h3 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">
+              Password Updated Successfully!
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Your password has been changed. You will be redirected to the login page.
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span className="text-sm">Redirecting...</span>
+            </div>
           </div>
         ) : (
           <Form {...form}>
@@ -97,11 +103,26 @@ const UpdatePasswordForm = () => {
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="Enter your new password" 
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input 
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your new password" 
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -115,11 +136,26 @@ const UpdatePasswordForm = () => {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="Confirm your new password" 
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input 
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your new password" 
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -127,7 +163,7 @@ const UpdatePasswordForm = () => {
               />
               
               {error && (
-                <div className="flex items-center gap-2 p-3 mt-2 text-sm text-destructive bg-destructive/10 rounded-md">
+                <div className="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 rounded-md">
                   <AlertCircle className="w-4 h-4" />
                   <p>{error}</p>
                 </div>
@@ -141,7 +177,7 @@ const UpdatePasswordForm = () => {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Updating...
+                    Updating Password...
                   </>
                 ) : "Update Password"}
               </Button>

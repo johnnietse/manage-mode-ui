@@ -15,53 +15,60 @@ const ResetPassword = () => {
   const [validLink, setValidLink] = useState(false);
 
   useEffect(() => {
-    const checkPasswordRecoverySession = async () => {
+    const handlePasswordReset = async () => {
       try {
         setLoading(true);
         
-        // Check if URL contains access_token and type=recovery
-        const hash = location.hash;
-        console.log('Reset link hash:', hash);
+        // Get the full URL including hash
+        const fullUrl = window.location.href;
+        console.log('Full reset URL:', fullUrl);
         
-        if (hash && hash.includes('access_token=') && hash.includes('type=recovery')) {
-          // Extract the access token from the hash
-          const accessToken = hash
-            .substring(1) // Remove the leading #
-            .split('&')
-            .find(param => param.startsWith('access_token='))
-            ?.split('=')[1];
-            
+        // Check if this is a password reset link
+        if (fullUrl.includes('type=recovery') && fullUrl.includes('access_token=')) {
+          console.log('Valid password reset link detected');
+          
+          // Extract tokens from URL hash
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          
+          console.log('Access token found:', !!accessToken);
+          console.log('Refresh token found:', !!refreshToken);
+          
           if (!accessToken) {
-            console.error('No access token found in URL');
-            throw new Error('Invalid access token in URL');
+            throw new Error('No access token found in reset link');
           }
           
-          console.log('Found access token in URL, attempting to set session');
-          
-          // Set the session from the recovery token
+          // Set the session using the tokens from the reset link
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
-            refresh_token: '',
+            refresh_token: refreshToken || '',
           });
           
           if (error) {
-            console.error('Error setting session:', error);
+            console.error('Error setting session from reset link:', error);
             throw error;
-          } else {
-            console.log('Successfully set recovery session:', data.session?.user?.email);
+          }
+          
+          if (data?.session?.user) {
+            console.log('Successfully authenticated user for password reset:', data.session.user.email);
             setValidLink(true);
+            
+            // Clear the URL hash to clean up the interface
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } else {
+            throw new Error('Failed to authenticate with reset link');
           }
         } else {
-          console.error('Invalid or missing reset link parameters:', hash);
-          setValidLink(false);
-          throw new Error('Invalid reset link format. Make sure you use the complete link from your email.');
+          console.error('Invalid reset link - missing required parameters');
+          throw new Error('Invalid password reset link. Please use the complete link from your email.');
         }
       } catch (error: any) {
-        console.error('Error checking password recovery session:', error);
+        console.error('Password reset link error:', error);
         setValidLink(false);
         toast({
-          title: "Invalid or expired link",
-          description: error.message || "Please request a new password reset link",
+          title: "Invalid or expired reset link",
+          description: error.message || "Please request a new password reset link from the login page.",
           variant: "destructive",
         });
       } finally {
@@ -69,8 +76,8 @@ const ResetPassword = () => {
       }
     };
 
-    checkPasswordRecoverySession();
-  }, [location.hash]);
+    handlePasswordReset();
+  }, []);
 
   const handleReturnToLogin = () => {
     navigate('/');
@@ -82,7 +89,10 @@ const ResetPassword = () => {
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center p-6">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="mt-4">Verifying your reset link...</p>
+            <p className="mt-4 text-center">Verifying your reset link...</p>
+            <p className="mt-2 text-sm text-muted-foreground text-center">
+              This may take a few seconds
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -96,17 +106,26 @@ const ResetPassword = () => {
       ) : (
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Invalid or Expired Link</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center text-destructive">
+              Reset Link Invalid
+            </CardTitle>
             <CardDescription className="text-center">
-              The password reset link appears to be invalid or has expired.
+              The password reset link appears to be invalid, expired, or already used.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <p className="mb-4 text-center text-muted-foreground">
-              Please request a new password reset link.
-            </p>
+          <CardContent className="flex flex-col items-center space-y-4">
+            <div className="text-center space-y-2">
+              <p className="text-muted-foreground">
+                This can happen if:
+              </p>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• The link has expired (links expire after 1 hour)</li>
+                <li>• The link has already been used</li>
+                <li>• The link was not copied completely</li>
+              </ul>
+            </div>
             <Button onClick={handleReturnToLogin} className="w-full">
-              Return to Login
+              Return to Login & Request New Link
             </Button>
           </CardContent>
         </Card>

@@ -123,9 +123,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       console.log("Requesting password reset for:", email);
       
-      // Get the actual deployed URL (not hardcoded)
-      const deployedUrl = window.location.origin;
-      const resetUrl = `${deployedUrl}/reset-password`;
+      // Use the current domain but ensure it's the correct deployed URL
+      const baseUrl = window.location.origin;
+      const resetUrl = `${baseUrl}/reset-password`;
       
       console.log("Using reset redirect URL:", resetUrl);
       
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("Password must be at least 6 characters");
       }
       
-      console.log("Updating password...");
+      console.log("Updating password for user:", user?.email);
       const { error } = await supabase.auth.updateUser({ password });
       
       if (error) {
@@ -166,8 +166,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       console.log("Password updated successfully");
       toast({
-        title: "Password updated",
-        description: "Your password has been successfully updated",
+        title: "Password updated successfully",
+        description: "You can now use your new password to sign in",
       });
       return;
     } catch (error: any) {
