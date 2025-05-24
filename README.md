@@ -286,3 +286,21 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+---
+
+## Recently Added Features (May 24th, 2025)
+
+1. Remove Task Feature
+- **Delete Button**: Added a trash icon button to each task card that's styled in red to indicate it's a destructive action
+- **Confirmation Dialog**: Implemented an AlertDialog that asks users to confirm before deleting a task to prevent accidental deletions
+- **Clear Messaging**: The confirmation dialog shows the specific task title and warns that the action cannot be undone
+- **Visual Feedback**: The delete button has hover effects and the confirmation button is styled with a red background to emphasize the destructive nature
+
+The delete functionality uses the existing deleteTask function from the `TaskContext`, so it will properly remove tasks from both the database and local state, and show appropriate toast notifications.
+
+2. User Isolation Features:
+- **Tasks are User-Specific**: Each task is linked to a `user_id`, so users only see their own tasks
+- **Categories are User-Specific**: Categories are also linked to `user_id`, so each user has their own set of categories
+- **Row Level Security (RLS)**: The webapp database has RLS policies that ensure users can only access their own data
+
