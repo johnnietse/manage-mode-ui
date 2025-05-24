@@ -11,6 +11,7 @@ Welcome to my second Lovable project! **TaskMaster** is a modern, visually stunn
 
 ### 📝 Task Management Core
 - Add, update, delete tasks
+- **Delete with confirmation** - Remove tasks with a confirmation dialog to prevent accidental deletions
 - Task fields:
   - Title
   - Description (Markdown supported)
@@ -22,6 +23,7 @@ Welcome to my second Lovable project! **TaskMaster** is a modern, visually stunn
   - Tags (coming soon)
 - Visual priority indicators
 - Recurring task support with regeneration
+- **Safe task deletion** with confirmation dialog showing task title
 
 ### 📅 Views & Filters
 - **List View** and **Calendar View**
@@ -42,6 +44,13 @@ Welcome to my second Lovable project! **TaskMaster** is a modern, visually stunn
   - Responsive UI for mobile and desktop
 - Click category to filter tasks
 - Create/edit/delete categories
+
+### 🗑️ Task Deletion & Safety
+- **Confirmation dialogs** for task deletion to prevent accidental removal
+- Shows task title in confirmation for clarity
+- Red-colored delete button with trash icon for clear visual indication
+- Hover effects for better user experience
+- Toast notifications for successful deletions
 
 ### 👥 Team Collaboration (Planned)
 - Invite members via email
@@ -174,6 +183,7 @@ VITE_SUPABASE_ANON_KEY=your-public-anon-key
 
 ## 📌 Roadmap
 ☑︎ Basic Task CRUD
+☑︎ Task Deletion with Confirmation
 ☑︎ Category Filtering
 ☑︎ Calendar View
 ☑︎ Supabase Auth Integration
