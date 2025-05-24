@@ -304,3 +304,5 @@ The delete functionality uses the existing deleteTask function from the `TaskCon
 - **Categories are User-Specific**: Categories are also linked to `user_id`, so each user has their own set of categories
 - **Row Level Security (RLS)**: The webapp database has RLS policies that ensure users can only access their own data
 
+3. **GSAP animations** including 3D tilt effects on task cards, smooth hover animations, bouncy button interactions, and elegant entrance animations for all components.
+
