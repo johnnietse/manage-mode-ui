@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTaskContext } from '@/context/TaskContext';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, LogOut } from 'lucide-react';
+import gsap from 'gsap';
 
 const Sidebar = () => {
   const { categories, addCategory } = useTaskContext();
@@ -13,6 +14,45 @@ const Sidebar = () => {
   const [newCategory, setNewCategory] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const { signOut } = useAuth();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    const title = titleRef.current;
+
+    if (sidebar) {
+      // Initial sidebar animation
+      gsap.fromTo(sidebar,
+        { x: -100, opacity: 0 },
+        { x: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+      );
+    }
+
+    if (title) {
+      // Title animation with a slight delay
+      gsap.fromTo(title,
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, delay: 0.3, ease: "back.out(1.7)" }
+      );
+    }
+
+    // Animate category items
+    const categoryItems = sidebar?.querySelectorAll('.category-item');
+    if (categoryItems) {
+      gsap.fromTo(categoryItems,
+        { x: -50, opacity: 0 },
+        { 
+          x: 0, 
+          opacity: 1, 
+          duration: 0.4, 
+          delay: 0.5,
+          stagger: 0.1,
+          ease: "power2.out" 
+        }
+      );
+    }
+  }, [categories]);
 
   const handleAddCategory = () => {
     if (newCategory.trim()) {
@@ -20,6 +60,21 @@ const Sidebar = () => {
       setNewCategory('');
       setShowAddCategory(false);
     }
+  };
+
+  const handleCategoryClick = (category: string, event: React.MouseEvent) => {
+    const target = event.currentTarget as HTMLElement;
+    
+    // Create a ripple effect
+    gsap.to(target, {
+      scale: 0.95,
+      duration: 0.1,
+      ease: "power2.out",
+      yoyo: true,
+      repeat: 1
+    });
+
+    setSelectedCategory(category);
   };
 
   // Store the selected category in sessionStorage to persist between page loads
@@ -42,18 +97,18 @@ const Sidebar = () => {
   }, []);
 
   return (
-    <div className="h-screen bg-sidebar text-sidebar-foreground w-64 p-4 flex flex-col">
-      <h1 className="text-xl font-bold mb-6">TaskMaster</h1>
+    <div ref={sidebarRef} className="h-screen bg-sidebar text-sidebar-foreground w-64 p-4 flex flex-col">
+      <h1 ref={titleRef} className="text-xl font-bold mb-6">TaskMaster</h1>
       
       <div className="mb-6">
         <h2 className="text-sm font-medium mb-2 text-sidebar-foreground/70">CATEGORIES</h2>
         <nav>
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <div 
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={(e) => handleCategoryClick(category, e)}
               className={cn(
-                "mb-1 py-2 px-3 rounded-md cursor-pointer transition-colors",
+                "category-item mb-1 py-2 px-3 rounded-md cursor-pointer transition-colors",
                 selectedCategory === category 
                   ? "bg-sidebar-accent text-sidebar-accent-foreground" 
                   : "hover:bg-sidebar-accent/50"
