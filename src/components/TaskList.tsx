@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TaskList = () => {
-  const { toggleTaskCompletion, filteredTasks } = useTaskContext();
+  const { toggleTaskCompletion, deleteTask, filteredTasks } = useTaskContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('dueDate');
   const [filterPriority, setFilterPriority] = useState('all');
@@ -110,6 +110,7 @@ const TaskList = () => {
               key={task.id} 
               task={task} 
               onToggleComplete={toggleTaskCompletion}
+              onDelete={deleteTask}
             />
           ))
         ) : (

@@ -3,12 +3,26 @@ import React from 'react';
 import { Task } from '@/context/TaskContext';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface TaskCardProps {
   task: Task;
   onToggleComplete: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 const getPriorityClass = (priority: string) => {
@@ -24,7 +38,7 @@ const getPriorityClass = (priority: string) => {
   }
 };
 
-const TaskCard = ({ task, onToggleComplete }: TaskCardProps) => {
+const TaskCard = ({ task, onToggleComplete, onDelete }: TaskCardProps) => {
   const isOverdue = new Date(task.dueDate) < new Date() && !task.completed;
   const priorityClass = getPriorityClass(task.priority);
 
@@ -60,6 +74,34 @@ const TaskCard = ({ task, onToggleComplete }: TaskCardProps) => {
             </span>
           </div>
         </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Task</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{task.title}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => onDelete(task.id)}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Card>
   );
