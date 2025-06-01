@@ -199,7 +199,12 @@ VITE_SUPABASE_ANON_KEY=your-public-anon-key
 </pre>
 
 ## 📸 Screenshots
-Add screenshots/gifs of your app UI here
+![Screenshot (2149)](https://github.com/user-attachments/assets/6d971807-73d8-4d76-95de-9f7ff39e6fb4)
+![Screenshot (2150)](https://github.com/user-attachments/assets/22b65e98-bd2a-4aee-b537-99c38f2eacd7)
+![Screenshot (2152)](https://github.com/user-attachments/assets/3f6185b8-a301-4494-bbb1-2562b58d748e)
+![Screenshot (2153)](https://github.com/user-attachments/assets/ccc04ebd-e9aa-4bd2-93f4-f4a0ea6028d3)
+![Screenshot (2154)](https://github.com/user-attachments/assets/11c009a9-81d7-48b6-8673-b684d8a9ec45)
+![Screenshot (2155)](https://github.com/user-attachments/assets/9e316e70-3aeb-49b7-9901-ef2258d76142)
 
 ## 💡 Inspiration
 This project is inspired by the UX of Todoist, ClickUp, and Notion, with a goal to create a more focused and elegant personal productivity app.
