@@ -165,8 +165,8 @@ Prerequisites
 
 ## Installation
 ```bash
-git clone https://github.com/your-username/taskmaster.git
-cd taskmaster
+git clone https://github.com/johnnietse/manage-mode-ui.git
+cd manage-mode-ui
 npm install
 npm run dev
 ```
