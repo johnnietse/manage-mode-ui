@@ -205,7 +205,7 @@ VITE_SUPABASE_ANON_KEY=your-public-anon-key
 ![Screenshot (2153)](https://github.com/user-attachments/assets/ccc04ebd-e9aa-4bd2-93f4-f4a0ea6028d3)
 ![Screenshot (2154)](https://github.com/user-attachments/assets/11c009a9-81d7-48b6-8673-b684d8a9ec45)
 ![Screenshot (2155)](https://github.com/user-attachments/assets/9e316e70-3aeb-49b7-9901-ef2258d76142)
-![Screenshot (2158)](https://github.com/user-attachments/assets/728e0222-866f-4728-b058-cf4fd84ca55c)
+![Screenshot (2159)](https://github.com/user-attachments/assets/f2d7e261-0810-458f-9035-5c72825ca34e)
 
 
 ## 💡 Inspiration
