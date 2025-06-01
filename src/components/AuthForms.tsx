@@ -6,11 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 import ResetPasswordForm from './ResetPasswordForm';
 
 export function AuthForms() {
   const [activeTab, setActiveTab] = useState<string>('login');
   const [showResetForm, setShowResetForm] = useState(false);
+  const [formError, setFormError] = useState<string>('');
   const { signIn, signUp, loading } = useAuth();
 
   const [loginEmail, setLoginEmail] = useState('');
@@ -20,21 +23,44 @@ export function AuthForms() {
   const [registerPassword, setRegisterPassword] = useState('');
   const [fullName, setFullName] = useState('');
 
+  const clearError = () => setFormError('');
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearError();
+    
+    if (!loginEmail.trim() || !loginPassword) {
+      setFormError('Please fill in all fields');
+      return;
+    }
+    
     try {
       await signIn(loginEmail, loginPassword);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      setFormError(error.message || 'Failed to sign in. Please try again.');
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearError();
+    
+    if (!registerEmail.trim() || !registerPassword || !fullName.trim()) {
+      setFormError('Please fill in all fields');
+      return;
+    }
+    
+    if (registerPassword.length < 6) {
+      setFormError('Password must be at least 6 characters long');
+      return;
+    }
+    
     try {
       await signUp(registerEmail, registerPassword, fullName);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
+      setFormError(error.message || 'Failed to create account. Please try again.');
     }
   };
 
@@ -56,10 +82,20 @@ export function AuthForms() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {formError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          )}
+          
           <Tabs
             defaultValue="login"
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={(value) => {
+              setActiveTab(value);
+              clearError();
+            }}
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-2">
@@ -77,7 +113,10 @@ export function AuthForms() {
                     placeholder="name@example.com"
                     required
                     value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
+                    onChange={(e) => {
+                      setLoginEmail(e.target.value);
+                      clearError();
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -97,7 +136,10 @@ export function AuthForms() {
                     type="password"
                     required
                     value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
+                    onChange={(e) => {
+                      setLoginPassword(e.target.value);
+                      clearError();
+                    }}
                   />
                 </div>
                 <Button 
@@ -119,7 +161,10 @@ export function AuthForms() {
                     placeholder="John Doe"
                     required
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      clearError();
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -130,7 +175,10 @@ export function AuthForms() {
                     placeholder="name@example.com"
                     required
                     value={registerEmail}
-                    onChange={(e) => setRegisterEmail(e.target.value)}
+                    onChange={(e) => {
+                      setRegisterEmail(e.target.value);
+                      clearError();
+                    }}
                   />
                 </div>
                 <div className="space-y-2">
@@ -138,9 +186,13 @@ export function AuthForms() {
                   <Input
                     id="registerPassword"
                     type="password"
+                    placeholder="At least 6 characters"
                     required
                     value={registerPassword}
-                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    onChange={(e) => {
+                      setRegisterPassword(e.target.value);
+                      clearError();
+                    }}
                   />
                 </div>
                 <Button 
