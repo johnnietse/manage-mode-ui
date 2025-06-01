@@ -182,6 +182,7 @@ VITE_SUPABASE_ANON_KEY=your-public-anon-key
 ```
 
 ## 📌 Roadmap
+<pre>
 ☑︎ Basic Task CRUD
 ☑︎ Task Deletion with Confirmation
 ☑︎ Category Filtering
@@ -195,6 +196,7 @@ VITE_SUPABASE_ANON_KEY=your-public-anon-key
 ☐ Task Sharing
 ☐ Task Templates
 ☐ Mobile App (React Native or PWA)
+</pre>
 
 ## 📸 Screenshots
 Add screenshots/gifs of your app UI here
