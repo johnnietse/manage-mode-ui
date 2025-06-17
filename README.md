@@ -315,3 +315,10 @@ The delete functionality uses the existing deleteTask function from the `TaskCon
 
 3. **GSAP animations** including 3D tilt effects on task cards, smooth hover animations, bouncy button interactions, and elegant entrance animations for all components.
 
+
+--
+## For testing the webapp in case if the sign-up verification functionality is not working:
+Please use the following login information:
+- Email: johnnietse994@gmail.com
+- Password: 1234567890
+
